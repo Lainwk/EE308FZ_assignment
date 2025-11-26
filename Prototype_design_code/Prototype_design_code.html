@@ -1,0 +1,684 @@
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <title>心灵伙伴 - 心理健康应用</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'warm-blue': '#4A90E2',
+            'soft-green': '#7ED321',
+            'light-bg': '#FAFAFA',
+            'title-gray': '#333333',
+            'text-gray': '#666666',
+            'border-gray': '#E8E8E8'
+          },
+          fontFamily: {
+            sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://code.iconify.design/iconify-icon/1.0.8/iconify-icon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <style>
+    /* 隐藏滚动条 */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .option-selected {
+      box-shadow: 0 0 0 2px #4A90E2;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+  </style>
+</head>
+
+<body class="bg-[#F5F5F5] flex items-center justify-center min-h-screen p-10 font-sans">
+  <!-- 主应用容器 -->
+  <div class="w-[375px] h-[812px] bg-white border border-border-gray rounded-xl shadow-lg overflow-hidden flex flex-col">
+    <!-- 首页 -->
+    <div class="flex flex-col" id="homePage">
+      <!-- 顶部标题栏 -->
+      <div class="h-[56px] flex items-center justify-between px-5 bg-white border-b border-border-gray">
+        <div class="flex items-center gap-2">
+          <img alt="User Avatar" class="w-8 h-8 rounded-full bg-gray-200" id="img1" src="https://modao.cc/agent-py/workspace/69249d3e2ef259e9c41daaa1/generated_images/0532c44057b4437aafa5ec6a3a1d8e54.jpg">
+          <div>
+            <p class="text-title-gray text-[15px] font-medium">你好，李明</p>
+            <p class="text-soft-green text-[12px]">情绪指数 78 · 良好</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <iconify-icon class="text-title-gray text-2xl" icon="solar:bell-linear"></iconify-icon>
+          <iconify-icon class="text-title-gray text-2xl" icon="solar:settings-linear"></iconify-icon>
+        </div>
+      </div>
+      <!-- 内容区 -->
+      <div class="h-[676px] overflow-y-auto hide-scrollbar px-4 pt-4 pb-6">
+        <!-- 情绪状态卡片 -->
+        <div class="bg-white rounded-xl shadow-sm p-4 border border-border-gray animate-fadeIn">
+          <div class="flex justify-between mb-3">
+            <h2 class="text-title-gray text-[17px] font-medium">今日情绪波动</h2>
+            <span class="text-soft-green text-[13px] flex items-center">
+              <iconify-icon class="mr-1" icon="solar:arrow-up-linear"></iconify-icon>
+              较昨日上升12%
+            </span>
+          </div>
+          <div class="h-36" id="moodChart"></div>
+        </div>
+        <!-- 快速测评入口 -->
+        <div class="mt-6 flex justify-center">
+          <button class="bg-warm-blue hover:opacity-90 text-white w-32 h-32 rounded-full flex flex-col items-center justify-center transition-all" onclick="showAssessment()">
+            <iconify-icon class="text-4xl mb-2" icon="solar:health-linear"></iconify-icon>
+            <span class="text-[15px] font-medium">情绪测评</span>
+          </button>
+        </div>
+        <!-- 功能模块区 -->
+        <div class="grid grid-cols-2 gap-4 mt-6">
+          <div class="bg-light-bg rounded-xl p-4 flex flex-col items-center">
+            <div class="bg-warm-blue bg-opacity-10 rounded-full w-14 h-14 flex items-center justify-center mb-3">
+              <iconify-icon class="text-warm-blue text-2xl" icon="solar:chat-round-linear"></iconify-icon>
+            </div>
+            <p class="text-title-gray text-[15px]">社区动态</p>
+          </div>
+          <div class="bg-light-bg rounded-xl p-4 flex flex-col items-center">
+            <div class="bg-warm-blue bg-opacity-10 rounded-full w-14 h-14 flex items-center justify-center mb-3">
+              <iconify-icon class="text-warm-blue text-2xl" icon="solar:documents-linear"></iconify-icon>
+            </div>
+            <p class="text-title-gray text-[15px]">历史报告</p>
+          </div>
+          <div class="bg-light-bg rounded-xl p-4 flex flex-col items-center">
+            <div class="bg-warm-blue bg-opacity-10 rounded-full w-14 h-14 flex items-center justify-center mb-3">
+              <iconify-icon class="text-warm-blue text-2xl" icon="solar:book-linear"></iconify-icon>
+            </div>
+            <p class="text-title-gray text-[15px]">心理知识</p>
+          </div>
+          <div class="bg-light-bg rounded-xl p-4 flex flex-col items-center">
+            <div class="bg-warm-blue bg-opacity-10 rounded-full w-14 h-14 flex items-center justify-center mb-3">
+              <iconify-icon class="text-warm-blue text-2xl" icon="solar:meditation-linear"></iconify-icon>
+            </div>
+            <p class="text-title-gray text-[15px]">放松练习</p>
+          </div>
+        </div>
+        <!-- 个性化建议卡片 -->
+        <div class="mt-6 bg-light-bg rounded-xl p-4 border border-border-gray animate-fadeIn">
+          <h2 class="text-title-gray text-[17px] font-medium mb-3">今日心理调节建议</h2>
+          <div class="flex items-start gap-3">
+            <div class="bg-soft-green bg-opacity-10 rounded-lg p-2">
+              <iconify-icon class="text-soft-green text-xl" icon="solar:stars-linear"></iconify-icon>
+            </div>
+            <p class="text-text-gray text-[15px] flex-1">今天可以尝试10分钟冥想练习，根据您的情绪报告分析，这将帮助您保持稳定情绪。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 测评界面 (初始隐藏) -->
+    <div class="hidden flex-col" id="assessmentPage">
+      <!-- 顶部标题栏 -->
+      <div class="h-[56px] flex items-center justify-between px-5 bg-white border-b border-border-gray">
+        <button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-light-bg" onclick="showHome()">
+          <iconify-icon class="text-title-gray text-xl" icon="solar:arrow-left-linear"></iconify-icon>
+        </button>
+        <div class="text-title-gray text-[15px] font-medium" id="assessmentProgress">测评中 (1/5)</div>
+        <button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-light-bg">
+          <iconify-icon class="text-title-gray text-xl" icon="solar:info-circle-linear"></iconify-icon>
+        </button>
+      </div>
+      <!-- 内容区 -->
+      <div class="h-[676px] flex flex-col px-4">
+        <!-- 进度条 -->
+        <div class="h-2 bg-light-bg rounded-full mt-4 mb-6">
+          <div class="h-2 bg-warm-blue rounded-full" id="assessmentProgressBar" style="width: 20%;"></div>
+        </div>
+        <!-- 问题区域 -->
+        <div class="mb-8" id="questionArea">
+          <h2 class="text-title-gray text-[20px] font-semibold mb-4" id="questionText">在过去的两周，您感到愉快的时间有多少？</h2>
+          <div class="space-y-4" id="optionsContainer">
+            <div class="p-4 border border-border-gray rounded-xl text-[17px] flex items-center option-card">
+              <div class="w-6 h-6 border-2 border-border-gray rounded-full mr-3 flex-shrink-0"></div>
+              <p>几乎每天</p>
+            </div>
+            <div class="p-4 border border-border-gray rounded-xl text-[17px] flex items-center option-card">
+              <div class="w-6 h-6 border-2 border-border-gray rounded-full mr-3 flex-shrink-0"></div>
+              <p>超过一半时间</p>
+            </div>
+            <div class="p-4 border border-border-gray rounded-xl text-[17px] flex items-center option-card">
+              <div class="w-6 h-6 border-2 border-border-gray rounded-full mr-3 flex-shrink-0"></div>
+              <p>几天</p>
+            </div>
+            <div class="p-4 border border-border-gray rounded-xl text-[17px] flex items-center option-card">
+              <div class="w-6 h-6 border-2 border-border-gray rounded-full mr-3 flex-shrink-0"></div>
+              <p>几乎没有</p>
+            </div>
+          </div>
+        </div>
+        <!-- 问题解释 -->
+        <div class="bg-light-bg border border-border-gray rounded-xl p-4 mt-auto mb-6">
+          <div class="flex items-start gap-2 text-warm-blue mb-1">
+            <iconify-icon class="text-lg mt-0.5" icon="solar:info-circle-linear"></iconify-icon>
+            <h3 class="text-[15px] font-medium">题目说明</h3>
+          </div>
+          <p class="text-text-gray text-[13px]">这个问题用于评估您最近的情绪状态，请根据实际感受如实回答。</p>
+        </div>
+        <!-- 底部操作栏 -->
+        <div class="flex justify-between py-4 border-t border-border-gray">
+          <button class="bg-white border border-border-gray text-title-gray text-[15px] font-medium rounded-full py-3 px-6" id="prevBtn" onclick="previousQuestion()" disabled="">上一题</button>
+          <button class="bg-warm-blue text-white text-[15px] font-medium rounded-full py-3 px-6" id="nextBtn" onclick="nextQuestion()">下一题</button>
+        </div>
+      </div>
+    </div>
+    <!-- AI情绪报告页面 (初始隐藏) -->
+    <div class="hidden flex-col" id="reportPage">
+      <!-- 顶部标题栏 -->
+      <div class="h-[56px] flex items-center justify-between px-5 bg-white border-b border-border-gray">
+        <button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-light-bg" onclick="showHome()">
+          <iconify-icon class="text-title-gray text-xl" icon="solar:arrow-left-linear"></iconify-icon>
+        </button>
+        <div class="text-title-gray text-[15px] font-medium">情绪分析报告</div>
+        <button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-light-bg">
+          <iconify-icon class="text-title-gray text-xl" icon="solar:info-circle-linear"></iconify-icon>
+        </button>
+      </div>
+      <!-- 内容区 -->
+      <div class="h-[676px] overflow-y-auto hide-scrollbar px-4 pt-4 pb-6">
+        <!-- 情绪评分卡片 -->
+        <div class="bg-gradient-to-br from-warm-blue to-blue-500 text-white rounded-xl p-6 mb-4">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-[20px] font-semibold">今日情绪指数</h2>
+            <span class="text-4xl font-bold">78</span>
+          </div>
+          <p class="text-blue-100 text-[13px]">较昨日上升 12%，保持良好状态</p>
+        </div>
+        <!-- AI分析报告 -->
+        <div class="bg-white rounded-xl border border-border-gray p-4 mb-4">
+          <h3 class="text-title-gray text-[17px] font-semibold mb-3">AI智能分析</h3>
+          <div class="space-y-3">
+            <div class="flex gap-3">
+              <div class="bg-soft-green bg-opacity-20 rounded-lg p-2 flex-shrink-0">
+                <iconify-icon class="text-soft-green text-lg" icon="solar:smile-circle-linear"></iconify-icon>
+              </div>
+              <div>
+                <p class="text-title-gray text-[13px] font-medium">情绪状态</p>
+                <p class="text-text-gray text-[12px]">您今天的情绪状态稳定，积极情绪占比较高</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="bg-warm-blue bg-opacity-20 rounded-lg p-2 flex-shrink-0">
+                <iconify-icon class="text-warm-blue text-lg" icon="solar:graph-linear"></iconify-icon>
+              </div>
+              <div>
+                <p class="text-title-gray text-[13px] font-medium">趋势分析</p>
+                <p class="text-text-gray text-[12px]">最近7天情绪呈上升趋势，压力水平在正常范围</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 调节建议 -->
+        <div class="bg-light-bg rounded-xl border border-border-gray p-4 mb-4">
+          <h3 class="text-title-gray text-[17px] font-semibold mb-3">心理调节建议</h3>
+          <div class="space-y-2">
+            <div class="flex items-start gap-2">
+              <span class="text-soft-green font-bold text-[14px] mt-0.5">✓</span>
+              <p class="text-text-gray text-[13px]">建议进行10-15分钟的冥想练习，可以帮助稳定情绪</p>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-soft-green font-bold text-[14px] mt-0.5">✓</span>
+              <p class="text-text-gray text-[13px]">进行户外活动或运动，增加内啡肽分泌</p>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-soft-green font-bold text-[14px] mt-0.5">✓</span>
+              <p class="text-text-gray text-[13px]">与朋友分享今天的积极体验，加强社交支持</p>
+            </div>
+          </div>
+        </div>
+        <!-- 返回首页按钮 -->
+        <button class="w-full bg-warm-blue text-white text-[15px] font-medium rounded-full py-3 mt-4" onclick="showHome()">返回首页</button>
+      </div>
+    </div>
+    <!-- 社区/压力疏导页面 (初始隐藏) -->
+    <div class="hidden flex-col" id="communityPage">
+      <!-- 顶部标题栏 -->
+      <div class="h-[56px] flex items-center justify-between px-5 bg-white border-b border-border-gray">
+        <button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-light-bg" onclick="showHome()">
+          <iconify-icon class="text-title-gray text-xl" icon="solar:arrow-left-linear"></iconify-icon>
+        </button>
+        <div class="text-title-gray text-[15px] font-medium">压力疏导社区</div>
+        <button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-light-bg" onclick="showPostModal()">
+          <iconify-icon class="text-title-gray text-xl" icon="solar:pen-new-square-linear"></iconify-icon>
+        </button>
+      </div>
+      <!-- 内容区 -->
+      <div class="h-[676px] overflow-y-auto hide-scrollbar px-4 pt-4 pb-6">
+        <!-- 社区帖子容器 -->
+        <div id="postsContainer">
+          <!-- 社区帖子示例 -->
+          <div class="bg-white rounded-xl border border-border-gray p-4 mb-4">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <p class="text-title-gray text-[13px] font-medium">匿名用户</p>
+                <p class="text-text-gray text-[12px]">2小时前</p>
+              </div>
+              <span class="bg-soft-green bg-opacity-20 text-soft-green text-[10px] px-2 py-1 rounded-full">共鸣</span>
+            </div>
+            <p class="text-title-gray text-[14px] mb-3">工作压力太大，最近总是失眠，不知道该怎么办...</p>
+            <div class="flex gap-4 text-text-gray text-[12px]">
+              <div class="flex items-center gap-1">
+                <iconify-icon icon="solar:heart-linear"></iconify-icon>
+                <span>24</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <iconify-icon icon="solar:chat-round-linear"></iconify-icon>
+                <span>8</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <iconify-icon icon="solar:share-linear"></iconify-icon>
+                <span>3</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- AI对话疏导按钮 -->
+        <button class="w-full bg-warm-blue text-white text-[15px] font-medium rounded-full py-3 mb-4" onclick="showAIChat()">
+          <iconify-icon class="mr-2" icon="solar:chat-round-linear"></iconify-icon>
+          AI心理疏导对话
+        </button>
+      </div>
+    </div>
+    <!-- AI对话页面 (初始隐藏) -->
+    <div class="hidden flex-col" id="aiChatPage">
+      <!-- 顶部标题栏 -->
+      <div class="h-[56px] flex items-center justify-between px-5 bg-white border-b border-border-gray">
+        <button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-light-bg" onclick="showCommunity()">
+          <iconify-icon class="text-title-gray text-xl" icon="solar:arrow-left-linear"></iconify-icon>
+        </button>
+        <div class="text-title-gray text-[15px] font-medium">AI心理疏导</div>
+        <button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-light-bg">
+          <iconify-icon class="text-title-gray text-xl" icon="solar:info-circle-linear"></iconify-icon>
+        </button>
+      </div>
+      <!-- 聊天区 -->
+      <div class="h-[676px] flex flex-col px-4 pt-4">
+        <!-- 聊天消息区 -->
+        <div class="flex-1 overflow-y-auto hide-scrollbar mb-4 space-y-3">
+          <!-- AI消息 -->
+          <div class="flex gap-3 mb-3">
+            <div class="bg-light-bg rounded-full w-8 h-8 flex-shrink-0"></div>
+            <div class="bg-light-bg rounded-xl p-3 max-w-xs">
+              <p class="text-text-gray text-[14px]">你好，我是心理陪伴助手。我注意到你最近压力较大，想和我聊一聊吗？</p>
+            </div>
+          </div>
+          <!-- 用户消息 -->
+          <div class="flex justify-end mb-3">
+            <div class="bg-warm-blue text-white rounded-xl p-3 max-w-xs">
+              <p class="text-[14px]">是的，工作压力特别大...</p>
+            </div>
+          </div>
+          <!-- AI消息 -->
+          <div class="flex gap-3 mb-3">
+            <div class="bg-light-bg rounded-full w-8 h-8 flex-shrink-0"></div>
+            <div class="bg-light-bg rounded-xl p-3 max-w-xs">
+              <p class="text-text-gray text-[14px]">我理解。压力大时，我们可以尝试一些有效的放松技巧。你现在最困扰的是什么？</p>
+            </div>
+          </div>
+        </div>
+        <!-- 消息输入框 -->
+        <div class="flex gap-2 py-4 border-t border-border-gray">
+          <input class="flex-1 bg-light-bg rounded-full px-4 py-2 text-[14px] outline-none" placeholder="输入您的想法..." type="text">
+          <button class="bg-warm-blue text-white rounded-full w-10 h-10 flex items-center justify-center hover:opacity-90">
+            <iconify-icon icon="solar:send-linear"></iconify-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- 发帖模态框 (初始隐藏) -->
+    <div class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end z-50" id="postModal">
+      <div class="w-full bg-white rounded-t-2xl p-4 animate-fadeIn">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-title-gray text-[17px] font-semibold">分享您的感受</h3>
+          <button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-light-bg" onclick="hidePostModal()">
+            <iconify-icon class="text-title-gray text-xl" icon="solar:close-circle-linear"></iconify-icon>
+          </button>
+        </div>
+        <textarea class="w-full bg-light-bg rounded-xl p-4 text-[14px] outline-none resize-none" placeholder="匿名分享您的压力和感受..." rows="5" id="postContent"></textarea>
+        <div class="flex gap-2 mt-4">
+          <button class="flex-1 border border-border-gray text-title-gray text-[15px] font-medium rounded-full py-3" onclick="hidePostModal()">取消</button>
+          <button class="flex-1 bg-warm-blue text-white text-[15px] font-medium rounded-full py-3" onclick="publishPost()">发布</button>
+        </div>
+      </div>
+    </div>
+    <!-- 底部导航栏 -->
+    <div class="h-[80px] bg-white border-t border-border-gray flex">
+      <div class="flex-1 flex flex-col items-center justify-center text-warm-blue" onclick="showHome()">
+        <iconify-icon class="text-2xl" icon="solar:home-smile-linear"></iconify-icon>
+        <span class="text-[10px] mt-1">首页</span>
+      </div>
+      <div class="flex-1 flex flex-col items-center justify-center text-text-gray" onclick="showAssessment()">
+        <iconify-icon class="text-2xl" icon="solar:health-linear"></iconify-icon>
+        <span class="text-[10px] mt-1">测评</span>
+      </div>
+      <div class="flex-1 flex flex-col items-center justify-center text-text-gray" onclick="showCommunity()">
+        <iconify-icon class="text-2xl" icon="solar:chat-round-linear"></iconify-icon>
+        <span class="text-[10px] mt-1">社区</span>
+      </div>
+      <div class="flex-1 flex flex-col items-center justify-center text-text-gray">
+        <iconify-icon class="text-2xl" icon="solar:user-linear"></iconify-icon>
+        <span class="text-[10px] mt-1">我的</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    // 页面切换功能
+    function showAssessment() {
+      document.getElementById('homePage').classList.add('hidden');
+      document.getElementById('assessmentPage').classList.remove('hidden');
+      initOptionSelection();
+    }
+
+    function showHome() {
+      document.getElementById('assessmentPage').classList.add('hidden');
+      document.getElementById('homePage').classList.remove('hidden');
+    }
+
+    // 初始化图表
+    function initMoodChart() {
+      const chartDom = document.getElementById('moodChart');
+      const myChart = echarts.init(chartDom);
+
+      const hours = Array.from({
+        length: 24
+      }, (_, i) => `${i}:00`);
+
+      const option = {
+        grid: {
+          left: '5%',
+          right: '5%',
+          bottom: '15%',
+          top: '15%',
+        },
+        xAxis: {
+          type: 'category',
+          data: ['6:00', '9:00', '12:00', '15:00', '18:00', '21:00'],
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          },
+          axisLabel: {
+            color: '#999999'
+          }
+        },
+        yAxis: {
+          type: 'value',
+          min: 0,
+          max: 100,
+          splitNumber: 4,
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          },
+          splitLine: {
+            lineStyle: {
+              type: 'dashed'
+            }
+          },
+          axisLabel: {
+            color: '#999999'
+          }
+        },
+        series: [{
+          data: [45, 78, 60, 85, 75, 90],
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: {
+            color: '#4A90E2',
+            width: 3,
+          },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [{
+                offset: 0,
+                color: 'rgba(74, 144, 226, 0.2)'
+              }, {
+                offset: 1,
+                color: 'rgba(74, 144, 226, 0.05)'
+              }]
+            }
+          },
+          itemStyle: {
+            color: '#4A90E2',
+            borderWidth: 2,
+            borderColor: '#FFFFFF'
+          }
+        }]
+      };
+
+      myChart.setOption(option);
+    }
+
+    // 初始化选项选择功能
+    function initOptionSelection() {
+      const optionCards = document.querySelectorAll('.option-card');
+      optionCards.forEach(card => {
+        card.addEventListener('click', function() {
+          // 重置所有选项
+          optionCards.forEach(item => {
+            item.classList.remove('option-selected');
+            const radio = item.querySelector('div');
+            radio.classList.remove('bg-warm-blue', 'border-warm-blue');
+            radio.innerHTML = '';
+          });
+
+          // 设置选中状态
+          this.classList.add('option-selected');
+          const radio = this.querySelector('div');
+          radio.classList.add('bg-warm-blue', 'border-warm-blue');
+          radio.innerHTML = '<iconify-icon icon="solar:check-minimalistic-linear" class="text-white text-base"></iconify-icon>';
+        });
+      });
+    }
+
+    // 页面导航函数
+    function hideAllPages() {
+      document.getElementById('homePage').classList.add('hidden');
+      document.getElementById('assessmentPage').classList.add('hidden');
+      document.getElementById('reportPage').classList.add('hidden');
+      document.getElementById('communityPage').classList.add('hidden');
+      document.getElementById('aiChatPage').classList.add('hidden');
+    }
+
+    function showCommunity() {
+      hideAllPages();
+      document.getElementById('communityPage').classList.remove('hidden');
+    }
+
+    function showAIChat() {
+      hideAllPages();
+      document.getElementById('aiChatPage').classList.remove('hidden');
+    }
+
+    function showReport() {
+      hideAllPages();
+      document.getElementById('reportPage').classList.remove('hidden');
+    }
+
+    function showPostModal() {
+      document.getElementById('postModal').classList.remove('hidden');
+    }
+
+    function hidePostModal() {
+      document.getElementById('postModal').classList.add('hidden');
+    }
+
+    // 测评题目数据
+    const assessmentQuestions = [{
+        question: "在过去的两周，您感到愉快的时间有多少？",
+        options: ["几乎每天", "超过一半时间", "几天", "几乎没有"]
+      },
+      {
+        question: "您最近感到疲劳或精力不足吗？",
+        options: ["完全没有", "有一点", "相当多", "非常严重"]
+      },
+      {
+        question: "您最近的睡眠质量如何？",
+        options: ["很好", "良好", "一般", "很差"]
+      },
+      {
+        question: "您最近的工作或学习效率如何？",
+        options: ["很高", "较高", "一般", "很低"]
+      },
+      {
+        question: "总体而言，您最近的心理状态如何？",
+        options: ["非常好", "良好", "一般", "需要改善"]
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+
+    // 更新测评界面
+    function updateAssessmentUI() {
+      const question = assessmentQuestions[currentQuestionIndex];
+      document.getElementById('questionText').textContent = question.question;
+      document.getElementById('assessmentProgress').textContent = `测评中 (${currentQuestionIndex + 1}/5)`;
+      document.getElementById('assessmentProgressBar').style.width = ((currentQuestionIndex + 1) / 5 * 100) + '%';
+
+      const optionsContainer = document.getElementById('optionsContainer');
+      optionsContainer.innerHTML = '';
+      question.options.forEach(option => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'p-4 border border-border-gray rounded-xl text-[17px] flex items-center option-card';
+        optionDiv.innerHTML = `
+          <div class="w-6 h-6 border-2 border-border-gray rounded-full mr-3 flex-shrink-0"></div>
+          <p>${option}</p>
+        `;
+        optionsContainer.appendChild(optionDiv);
+      });
+
+      initOptionSelection();
+
+      // 更新按钮状态
+      document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+      document.getElementById('prevBtn').style.opacity = currentQuestionIndex === 0 ? '0.5' : '1';
+
+      if (currentQuestionIndex === 4) {
+        document.getElementById('nextBtn').textContent = '完成测评';
+      } else {
+        document.getElementById('nextBtn').textContent = '下一题';
+      }
+    }
+
+    // 下一题
+    function nextQuestion() {
+      if (currentQuestionIndex < assessmentQuestions.length - 1) {
+        currentQuestionIndex++;
+        updateAssessmentUI();
+      } else if (currentQuestionIndex === 4) {
+        completeAssessment();
+      }
+    }
+
+    // 上一题
+    function previousQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        updateAssessmentUI();
+      }
+    }
+
+    // 发布帖子
+    function publishPost() {
+      const content = document.getElementById('postContent').value.trim();
+      if (content === '') {
+        alert('请输入您要分享的内容');
+        return;
+      }
+
+      const postsContainer = document.getElementById('postsContainer');
+      const newPost = document.createElement('div');
+      newPost.className = 'bg-white rounded-xl border border-border-gray p-4 mb-4 animate-fadeIn';
+
+      const now = new Date();
+      const timeStr = '刚刚';
+
+      newPost.innerHTML = `
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <p class="text-title-gray text-[13px] font-medium">匿名用户</p>
+            <p class="text-text-gray text-[12px]">${timeStr}</p>
+          </div>
+          <span class="bg-soft-green bg-opacity-20 text-soft-green text-[10px] px-2 py-1 rounded-full">新帖</span>
+        </div>
+        <p class="text-title-gray text-[14px] mb-3">${content}</p>
+        <div class="flex gap-4 text-text-gray text-[12px]">
+          <div class="flex items-center gap-1">
+            <iconify-icon icon="solar:heart-linear"></iconify-icon>
+            <span>0</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <iconify-icon icon="solar:chat-round-linear"></iconify-icon>
+            <span>0</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <iconify-icon icon="solar:share-linear"></iconify-icon>
+            <span>0</span>
+          </div>
+        </div>
+      `;
+
+      postsContainer.insertBefore(newPost, postsContainer.firstChild);
+      document.getElementById('postContent').value = '';
+      hidePostModal();
+    }
+
+    // 更新测评按钮，完成后显示报告
+    function completeAssessment() {
+      currentQuestionIndex = 0;
+      showReport();
+    }
+
+    // 页面加载后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      initMoodChart();
+      updateAssessmentUI();
+    });
+  </script>
+
+
+</body>
+
+</html>
