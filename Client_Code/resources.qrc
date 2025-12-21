@@ -1,0 +1,31 @@
+<RCC>
+    <qresource prefix="/head_portrait">
+        <file>head_portrait/0.png</file>
+        <file>head_portrait/1.png</file>
+        <file>head_portrait/2.png</file>
+        <file>head_portrait/3.png</file>
+        <file>head_portrait/4.png</file>
+        <file>head_portrait/5.png</file>
+        <file>head_portrait/6.png</file>
+        <file>head_portrait/7.png</file>
+        <file>head_portrait/8.png</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>image/chat.png</file>
+        <file>image/chat_check.png</file>
+        <file>image/contact.png</file>
+        <file>image/contact_check.png</file>
+        <file>image/home.png</file>
+        <file>image/home_check.png</file>
+        <file>image/my.png</file>
+        <file>image/my_check.png</file>
+        <file>image/add.png</file>
+        <file>image/find.png</file>
+        <file>image/person.png</file>
+        <file>image/heart.png</file>
+        <file>image/release.png</file>
+        <file>image/return.png</file>
+        <file>image/check.png</file>
+        <file>image/logo.png</file>
+    </qresource>
+</RCC>
