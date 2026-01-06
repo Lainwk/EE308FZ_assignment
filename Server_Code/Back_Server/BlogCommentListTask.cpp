@@ -9,13 +9,18 @@ BlogCommentListTask::BlogCommentListTask(char* recv_msg_package, int len, int cl
     : BaseTask(recv_msg_package, len, client_fd) {}
 
 void BlogCommentListTask::do_service() {
+    std::cout << "[BlogCommentListTask] Starting..." << std::endl;
+    
     BLOG_COMMENT_LIST_REQ req = {0};
     memcpy(&req, this->recv_msg_package + sizeof(HEAD), sizeof(BLOG_COMMENT_LIST_REQ));
     int limit = req.limit > 0 ? req.limit : 20;
     long long blog_id = 0;
     try { blog_id = std::stoll(std::string(req.blog_id)); } catch (...) { blog_id = 0; }
 
+    std::cout << "[BlogCommentListTask] blog_id=" << blog_id << " limit=" << limit << std::endl;
+
     auto comments = ModelControl::getInstance()->getModel()->GetComments(blog_id, limit);
+    std::cout << "[BlogCommentListTask] Found " << comments.size() << " comments" << std::endl;
 
     char resp_package[PACKAGESIZE] = {0};
     HEAD resp_head = {0};
@@ -26,6 +31,7 @@ void BlogCommentListTask::do_service() {
     resp_body.status_code = 0;
     resp_body.comment_count = static_cast<int>(comments.size());
     if (offset + static_cast<int>(sizeof(BLOG_COMMENT_LIST_RESP)) > PACKAGESIZE) {
+        std::cerr << "[BlogCommentListTask] ERROR: Response header too large!" << std::endl;
         return;
     }
     memcpy(resp_package + offset, &resp_body, sizeof(BLOG_COMMENT_LIST_RESP));
@@ -41,6 +47,7 @@ void BlogCommentListTask::do_service() {
 
         int need = static_cast<int>(sizeof(BLOG_COMMENT_ITEM) + content.size());
         if (offset + need > PACKAGESIZE) {
+            std::cout << "[BlogCommentListTask] Package size limit reached at comment " << count_written << std::endl;
             break;
         }
         memcpy(resp_package + offset, &item, sizeof(BLOG_COMMENT_ITEM));
@@ -58,6 +65,12 @@ void BlogCommentListTask::do_service() {
 
     resp_head.data_len = offset - static_cast<int>(sizeof(HEAD));
     memcpy(resp_package, &resp_head, sizeof(HEAD));
+    
+    std::cout << "[BlogCommentListTask] Sending response, total_size=" << (offset)
+              << " comment_count=" << count_written << std::endl;
+    
     FrontBridgeSender::getInstance()->writeToShm(resp_package, PACKAGESIZE, this->client_fd);
+    
+    std::cout << "[BlogCommentListTask] Task completed" << std::endl;
 }
 

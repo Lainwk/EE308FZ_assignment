@@ -1195,25 +1195,42 @@ bool BaseModel::AddComment(long long blog_id, long long user_id, const std::stri
 std::vector<BaseModel::CommentItem> BaseModel::GetComments(long long blog_id, int limit) {
     std::vector<CommentItem> list;
     try {
+        std::cout << "[GetComments] Starting for blog_id=" << blog_id << " limit=" << limit << std::endl;
+        
         auto db = openDB();
-        if (!db || !db->isOpen()) return list;
+        if (!db || !db->isOpen()) {
+            std::cerr << "[GetComments] Failed to open database" << std::endl;
+            return list;
+        }
+        
+        std::cout << "[GetComments] Database opened, ensuring tables..." << std::endl;
         EnsureBlogTables(db.get());
+        std::cout << "[GetComments] Tables ensured, preparing query..." << std::endl;
 
         SQLiteStmt stmt;
         if (!stmt.prepare(db->get(),
             "SELECT user_name, created_at, content FROM blog_comments WHERE blog_id=? "
             "ORDER BY created_at DESC LIMIT ?")) {
+            std::cerr << "[GetComments] Failed to prepare statement" << std::endl;
             return list;
         }
+        
+        std::cout << "[GetComments] Statement prepared, binding parameters..." << std::endl;
         stmt.bindInt64(1, blog_id);
         stmt.bindInt(2, limit);
-        while (stmt.step()) {
+        
+        std::cout << "[GetComments] Parameters bound, executing query..." << std::endl;
+        int row_count = 0;
+        while (stmt.step() == SQLITE_ROW) {
             CommentItem c;
             c.author_name = stmt.getText(0);
             c.created_at = stmt.getText(1);
             c.content = stmt.getText(2);
             list.push_back(c);
+            row_count++;
         }
+        
+        std::cout << "[GetComments] Query completed, found " << row_count << " comments" << std::endl;
     }
     catch (const std::exception& e) {
         std::cerr << "[GetComments] Exception: " << e.what() << std::endl;
