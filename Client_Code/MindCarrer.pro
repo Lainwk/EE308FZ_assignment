@@ -1,4 +1,4 @@
-QT       += core gui network sql
+QT       += core gui network sql concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -21,7 +21,9 @@ SOURCES += \
     trendchartwidget.cpp \
     assessmentcache.cpp \
     changepasswordpage.cpp \
-    chatpage.cpp
+    chatpage.cpp \
+    reminderservice.cpp \
+    psychotipsmanager.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -38,7 +40,9 @@ HEADERS += \
     trendchartwidget.h \
     assessmentcache.h \
     changepasswordpage.h \
-    chatpage.h
+    chatpage.h \
+    reminderservice.h \
+    psychotipsmanager.h
 
 FORMS += \
     mainwindow.ui \
@@ -55,3 +59,6 @@ FORMS += \
 
 RESOURCES += \
     resources.qrc
+
+# 设置应用程序图标
+win32:RC_FILE = MindCarrer.rc

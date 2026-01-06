@@ -1,17 +1,27 @@
 #include <QApplication>
+#include <QIcon>
 #include "authwindow.h"
 #include "localstore.h"
 #include "frontclient.h"
 #include "mainwindow.h"
+#include "psychotipsmanager.h"
 #include <QCoreApplication>
 #include <cstring>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    
+    // 设置应用程序图标
+    a.setWindowIcon(QIcon(":/image/logo.png"));
+    
     LocalStore::instance().init();
+    
+    // 启动心理小tips推送服务
+    PsychoTipsManager::instance().start();
     // 自动连接前置服务器（默认 127.0.0.1:10001，可按需调整）
-    FrontClient::instance().connectToServer("106.53.21.199", 10001);
+    //106.53.21.199
+    FrontClient::instance().connectToServer("127.0.0.1", 10001);
 
     if (LocalStore::instance().hasSession()) {
         SessionData s = LocalStore::instance().loadSession();

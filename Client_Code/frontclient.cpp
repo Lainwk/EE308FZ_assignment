@@ -2,6 +2,7 @@
 #include <QHostAddress>
 #include <QDebug>
 #include <QDateTime>
+#include "localstore.h"
 
 FrontClient::FrontClient() {
     reconnectTimer = new QTimer(this);
@@ -286,6 +287,8 @@ void FrontClient::processPushData() {
                         qint64 timestamp = QDateTime::currentMSecsSinceEpoch();
 
                         qDebug() << "[FrontClient] Message from:" << senderId;
+                        // Save incoming message to local cache so UI can refresh immediately
+                        LocalStore::instance().saveMessage(senderId, senderId, content, timestamp, 1 /*incoming*/);
                         emit messageReceived(senderId, content, timestamp);
                     }
                 }

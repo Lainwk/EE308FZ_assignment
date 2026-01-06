@@ -57,6 +57,10 @@ public:
     SessionData loadSession() const;
     void saveSession(const SessionData& s);
     void clearSession();
+    
+    // 新增：设置当前用户ID（用于多用户数据隔离）
+    void setCurrentUserId(const QString& userId);
+    QString getCurrentUserId() const;
 
     // 消息存储/读取
     bool saveMessage(const QString& convId, const QString& senderId, const QString& content, qint64 timestampMs, int direction);
@@ -76,4 +80,5 @@ private:
 
     QSqlDatabase db;
     QSettings settings;
+    QString m_currentUserId;  // 新增：当前登录用户ID
 };

@@ -262,8 +262,16 @@ void MainWindow::onBackToContacts()
 
 void MainWindow::onLogout()
 {
+    // 停止消息提醒服务
+    ReminderService::instance().stop();
+    qDebug() << "[MainWindow] Stopped ReminderService on logout";
+    
     // 清除本地会话数据
     LocalStore::instance().clearSession();
+    
+    // 清除当前用户ID，关闭数据库连接
+    LocalStore::instance().setCurrentUserId("");
+    qDebug() << "[MainWindow] Cleared current user ID on logout";
     
     // 创建并显示登录窗口
     AuthWindow* authWin = new AuthWindow();

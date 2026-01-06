@@ -13,6 +13,7 @@
 #include "frontclient.h"
 #include "mainwindow.h"
 #include "localstore.h"
+#include "reminderservice.h"
 
 AuthWindow::AuthWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -185,6 +186,14 @@ void AuthWindow::on_btnDoLogin_clicked()
         s.userName = QString::fromLatin1(resp_body.user_name);
         s.avatarIndex = resp_body.profile_picture_index;
         LocalStore::instance().saveSession(s);
+        
+        // 设置当前用户ID，切换到该用户的数据库
+        LocalStore::instance().setCurrentUserId(s.userId);
+        qDebug() << "[AuthWindow] Set current user ID:" << s.userId;
+        
+        // 启动消息提醒服务
+        ReminderService::instance().start(s.userId);
+        qDebug() << "[AuthWindow] Started ReminderService for user:" << s.userId;
 
         auto *mainWin = new MainWindow();
         // 设置用户信息

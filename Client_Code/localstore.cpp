@@ -19,7 +19,13 @@ QString LocalStore::dbPath() const {
         base = QDir::homePath() + "/.mindcarrer";
     }
     QDir().mkpath(base);
-    return base + "/local_cache.sqlite";
+    
+    // 根据用户ID生成独立的数据库文件
+    if (m_currentUserId.isEmpty()) {
+        // 未登录时使用临时数据库
+        return base + "/temp_cache.sqlite";
+    }
+    return base + QString("/user_%1.sqlite").arg(m_currentUserId);
 }
 
 bool LocalStore::init() {
@@ -34,20 +40,29 @@ bool LocalStore::init() {
 
 bool LocalStore::ensureTables() {
     QSqlQuery q(db);
+    // 会话表 - 添加owner_id字段
     if (!q.exec("CREATE TABLE IF NOT EXISTS conversations ("
                 "conv_id TEXT PRIMARY KEY,"
+                "owner_id TEXT NOT NULL DEFAULT '',"
                 "last_msg_time INTEGER DEFAULT 0,"
                 "unread_count INTEGER DEFAULT 0"
                 ");")) return false;
+    
+    // 消息表 - 添加owner_id字段
     if (!q.exec("CREATE TABLE IF NOT EXISTS messages ("
                 "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                 "conv_id TEXT,"
+                "owner_id TEXT NOT NULL DEFAULT '',"
                 "sender_id TEXT,"
                 "content TEXT,"
                 "timestamp_ms INTEGER,"
                 "direction INTEGER,"
                 "status INTEGER DEFAULT 0"
                 ");")) return false;
+    
+    // 为owner_id创建索引，提高查询性能
+    q.exec("CREATE INDEX IF NOT EXISTS idx_messages_owner ON messages(owner_id);");
+    q.exec("CREATE INDEX IF NOT EXISTS idx_conversations_owner ON conversations(owner_id);");
     if (!q.exec("CREATE TABLE IF NOT EXISTS posts ("
                 "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                 "author_id TEXT,"
@@ -98,33 +113,81 @@ void LocalStore::clearSession() {
     settings.sync();
 }
 
+void LocalStore::setCurrentUserId(const QString& userId) {
+    if (m_currentUserId == userId) {
+        return;  // 用户ID未变化，无需切换
+    }
+    
+    // 关闭当前数据库连接
+    if (db.isOpen()) {
+        db.close();
+        QSqlDatabase::removeDatabase("local_store");
+    }
+    
+    // 设置新用户ID
+    m_currentUserId = userId;
+    
+    // 重新初始化数据库（会使用新的dbPath）
+    if (!userId.isEmpty()) {
+        init();
+    }
+}
+
+QString LocalStore::getCurrentUserId() const {
+    return m_currentUserId;
+}
+
 bool LocalStore::saveMessage(const QString& convId, const QString& senderId, const QString& content, qint64 timestampMs, int direction) {
+    // 验证当前用户ID
+    if (m_currentUserId.isEmpty()) {
+        qWarning() << "[LocalStore] Cannot save message: no current user";
+        return false;
+    }
+    
+    // 插入消息记录（包含owner_id）
     QSqlQuery q(db);
-    q.prepare("INSERT INTO messages (conv_id, sender_id, content, timestamp_ms, direction, status) "
-              "VALUES (?, ?, ?, ?, ?, 0)");
+    q.prepare("INSERT INTO messages (conv_id, owner_id, sender_id, content, timestamp_ms, direction, status) "
+              "VALUES (?, ?, ?, ?, ?, ?, 0)");
     q.addBindValue(convId);
+    q.addBindValue(m_currentUserId);  // 添加owner_id
     q.addBindValue(senderId);
     q.addBindValue(content);
     q.addBindValue(timestampMs);
     q.addBindValue(direction);
-    if (!q.exec()) return false;
+    if (!q.exec()) {
+        qWarning() << "[LocalStore] Failed to save message:" << q.lastError().text();
+        return false;
+    }
 
+    // 更新会话表（包含owner_id）
     QSqlQuery upd(db);
-    upd.prepare("INSERT INTO conversations (conv_id, last_msg_time, unread_count) "
-                "VALUES (?, ?, 0) "
+    upd.prepare("INSERT INTO conversations (conv_id, owner_id, last_msg_time, unread_count) "
+                "VALUES (?, ?, ?, 0) "
                 "ON CONFLICT(conv_id) DO UPDATE SET last_msg_time=excluded.last_msg_time");
     upd.addBindValue(convId);
+    upd.addBindValue(m_currentUserId);  // 添加owner_id
     upd.addBindValue(timestampMs);
     return upd.exec();
 }
 
 QVector<MessageRecord> LocalStore::loadMessages(const QString& convId, int limit) const {
     QVector<MessageRecord> res;
+    
+    // 验证当前用户ID
+    if (m_currentUserId.isEmpty()) {
+        qWarning() << "[LocalStore] Cannot load messages: no current user";
+        return res;
+    }
+    
     QSqlQuery q(db);
+    // 添加owner_id过滤条件
     q.prepare("SELECT conv_id, sender_id, content, timestamp_ms, direction "
-              "FROM messages WHERE conv_id=? ORDER BY timestamp_ms DESC LIMIT ?");
+              "FROM messages WHERE conv_id=? AND owner_id=? "
+              "ORDER BY timestamp_ms DESC LIMIT ?");
     q.addBindValue(convId);
+    q.addBindValue(m_currentUserId);  // 只加载当前用户的消息
     q.addBindValue(limit);
+    
     if (q.exec()) {
         while (q.next()) {
             MessageRecord r;
